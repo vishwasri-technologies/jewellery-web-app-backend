@@ -76,59 +76,27 @@ app.post("/Login", async (req, res) => {
   }
 });
 
-// Reset Password API
-// app.post("/Reset", async (req, res) => {
-//     try {
-//       const { email, newPassword, confirmPassword } = req.body;
-  
-//       // Validate inputs
-//       if (!email || !newPassword || !confirmPassword) {
-//         return res.status(400).json({ message: "All fields are required" });
-//       }
-//       if (newPassword !== confirmPassword) {
-//         return res.status(400).json({ message: "Passwords do not match" });
-//       }
-  
-//       // Check if user exists
-//       const user = await User.findOne({ email });
-//       if (!user) return res.status(400).json({ message: "User not found" });
-  
-//       // Hash new password before saving
-//       const hashedPassword = await bcrypt.hash(newPassword, 10);
-//       user.password = hashedPassword;
-//       await user.save();
-  
-//       res.status(200).json({ message: "Password reset successful" });
-//     } catch (error) {
-//       res.status(500).json({ message: "Internal Server Error" });
-//     }
-//   });
-
+// Reset Password Route
 app.post("/Reset", async (req, res) => {
-    try {
-      const { newPassword, confirmPassword } = req.body;
+  try {
+    const { email, newPassword } = req.body;
 
-      // Validate inputs
-      if (!newPassword || !confirmPassword) {
-        return res.status(400).json({ message: "All fields are required" });
-      }
-      if (newPassword !== confirmPassword) {
-        return res.status(400).json({ message: "Passwords do not match" });
-      }
-
-      // Get the email from the logged-in user
-      const user = await User.findOne({ email: req.user.email });
-      if (!user) return res.status(400).json({ message: "User not found" });
-
-      // Hash new password before saving
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      user.password = hashedPassword;
-      await user.save();
-
-      res.status(200).json({ message: "Password reset successful" });
-    } catch (error) {
-      res.status(500).json({ message: "Internal Server Error" });
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 });
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
